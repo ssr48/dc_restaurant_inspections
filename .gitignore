@@ -2,6 +2,7 @@
 .idea/*
 backup/*
 scraped_inspections_html/*
+potential_inspections_html/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
