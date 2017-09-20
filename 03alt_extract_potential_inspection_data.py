@@ -4,6 +4,7 @@ import datetime
 import pandas as pd
 import os
 from multiprocessing.pool import Pool
+import pickle
 
 
 def get_validity_data(inspection_id,
@@ -198,12 +199,14 @@ scraped_inspection_links_dataframe = pd.read_csv('output/scraped_inspection_link
 
 historical_known_valid_inspection_ids = pd.read_csv('historical_known_valid_inspection_ids.csv')['inspection_id']
 
-results = Pool(8).map(get_validity_data,
+results = Pool(7).map(get_validity_data,
                       potential_inspection_ids_dataframe[
                                    potential_inspection_ids_dataframe['was_live']]['inspection_id'])
+pickle.dump(results,
+            open('backup/extract_potential_inspection_data_results.pickle', 'wb'), pickle.HIGHEST_PROTOCOL)
 
 potential_inspection_summary_data = pd.concat([pd.DataFrame(x['inspection_summary'], index=[i])
-                                               for i, x in enumerate(results)])
+                                               for i, x in enumerate(results) if x is not None])
 potential_inspection_summary_data = potential_inspection_summary_data[
     ['inspection_id',
      'establishment_name',
@@ -249,7 +252,7 @@ potential_inspection_summary_data.loc[
 potential_inspection_summary_data.to_csv('output/potential_inspection_summary_data.csv', index=False)
 
 potential_violation_details_data = pd.concat([pd.DataFrame(x['violation_details'])
-                                              for x in results])
+                                              for x in results if x is not None])
 potential_violation_details_data = potential_violation_details_data[
     ['inspection_id', 'violation_number', 'violation_text', 'dcmr_25_code']]
 potential_violation_details_data.to_csv('output/potential_violation_details_data.csv', index=False)
